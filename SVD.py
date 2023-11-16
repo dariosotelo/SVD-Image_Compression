@@ -6,14 +6,11 @@ Created on Tue Nov 14 15:53:22 2023
 @authors: darios, betomqz, mariavara
 """
 
-from skimage.color import rgb2gray
-from skimage import data
-import matplotlib.pyplot as plt
-import numpy as np
-
 import numpy as np
 from scipy.linalg import svd
 
+
+#Plan A
 def singular_value_descomposition(Mat):
     aux1 = np.dot(Mat, Mat.T)
     
@@ -56,7 +53,7 @@ def singular_value_descomposition(Mat):
     #Se le aplica la raíz a los eigenvalores
     eigval = np.sqrt(eigval)
     
-    sigma = eigval[::-1]
+    sigma = eigval[::1]
     
     return U, sigma, Vt
 
@@ -84,6 +81,7 @@ print(u1, s1, v1)
 
 print("")
 print(" ")
+print("Comprobación")
 
 diag_eig1 = np.zeros((3, 3))
 diag_eig1[:3, :3] = np.diag(s1[:3])
@@ -104,162 +102,163 @@ A_nueva = u@diag_eig@v
 print(A_nueva)
     
     
-    
+
+
+
 #%%
-
-#U, singular, V_transpose = svd()
-
-
-
-
-
-
-
-def calculU(M): 
-    B = np.dot(M, M.T) 
-        
-    eigenvalues, eigenvectors = np.linalg.eig(B) 
-    ncols = np.argsort(eigenvalues)[::-1] 
-    
-    return eigenvectors[:,ncols] 
-
-
-def calculVt(M): 
-    B = np.dot(M.T, M)
-        
-    eigenvalues, eigenvectors = np.linalg.eig(B) 
-    ncols = np.argsort(eigenvalues)[::-1] 
-    
-    return eigenvectors[:,ncols].T
-
-def calculSigma(M): 
-    if (np.size(np.dot(M, M.T)) > np.size(np.dot(M.T, M))): 
-        newM = np.dot(M.T, M) 
-    else: 
-        newM = np.dot(M, M.T) 
-        
-    eigenvalues, eigenvectors = np.linalg.eig(newM) 
-    eigenvalues = np.sqrt(eigenvalues) 
-    #Sorting in descending order as the svd function does 
-    return eigenvalues[::-1] 
-
-
-#A = np.array([[4,2,0],[1,5,6]])
-
-U = calculU(A) 
-Sigma = calculSigma(A) 
-Vt = calculVt(A)
-
-
-
-print("-------------------U-------------------")
-print(U)
-print("\n--------------Sigma----------------")
-print(Sigma)
-print("\n-------------V transpose---------------")
-print(Vt)
-
-
-
-
-
-
-#%% Esta parte sí funciona
 
 import numpy as np
 from numpy.linalg import norm
-
 from random import normalvariate
 from math import sqrt
 
 
-def randomUnitVector(n):
-    unnormalized = [normalvariate(0, 1) for _ in range(n)]
-    theNorm = sqrt(sum(x * x for x in unnormalized))
-    return [x / theNorm for x in unnormalized]
+def vector_unitario_aleatorio(n):
+    #Crea una lista aleatoria que sigue una distribución normal con media 0 y 1 como desviación estándar de n muestras
+    vector_aleatorio = [normalvariate(0, 1) for _ in range(n)]
+    
+    #Hace la norma Euclidiana
+    norma = sqrt(sum(x * x for x in vector_aleatorio))
+    
+    #Regresa la norma del vector divide cada elemento entre la norma euclidiana
+    return [x/norma for x in vector_aleatorio]
 
 
-def svd_1d(A, epsilon=1e-10):
-    ''' The one-dimensional SVD '''
-
+    
+def svd_potencia(A, tol=1e-10, noMaxIt=1e10):
     n, m = A.shape
-    x = randomUnitVector(min(n,m))
-    lastV = None
-    currentV = x
-
-    if n > m:
-        B = np.dot(A.T, A)
-    else:
-        B = np.dot(A, A.T)
-
-    iterations = 0
+    
+    #Crea un vector normalizado del tamaño más pequeño entre columnas y renglones
+    x = vector_unitario_aleatorio(min(n, m))
+    ultimo = None
+    actual = x
+    
+    #Se hace una matriz cuadrada y se escoge la que sea menor en tamaño
+    B = np.dot(A.T, A) if n > m else np.dot(A, A.T)
+    
+    k = 0
+    
+    #Se implementa el método de la potencia para encontrar el vector propio dominante de 
+    #la matriz 'B', iterando hasta que el vector propio converja a un valor cercano al vector propio anterior
     while True:
-        iterations += 1
-        lastV = currentV
-        currentV = np.dot(B, lastV)
-        currentV = currentV / norm(currentV)
-
-        if abs(np.dot(currentV, lastV)) > 1 - epsilon:
-            print("converged in {} iterations!".format(iterations))
-            return currentV
-
-
-def svd1(A, k=None, epsilon=1e-10):
-    '''
-        Compute the singular value decomposition of a matrix A
-        using the power method. A is the input matrix, and k
-        is the number of singular values you wish to compute.
-        If k is None, this computes the full-rank decomposition.
-    '''
+        k+=1
+        ultimo = actual.copy()
+        actual = np.dot(B, ultimo)
+        actual = actual / norm(actual)
+        
+        if abs(np.dot(actual, ultimo)) > 1 - tol:
+            return actual
+        
+        
+        if k > noMaxIt:
+            raise TypeError("El método no converge con la tolerancia dada y/o el número máximo de iteraciones es muy pequeño")
+        
+        
+        
+def descomposicion_en_valores_singulares(A, k=None, tol=1e-10, noMaxIt=1e10):
+    #En esta línea se convierte la matriz en un arreglo de numpy de tipo flotante
     A = np.array(A, dtype=float)
+    
+    #Se declaran algunas variables con las que se va a trabajar
     n, m = A.shape
-    svdSoFar = []
-    if k is None:
-        k = min(n, m)
-
+    svd_actual = []
+    if k is None: k = min(n, m)
+    
     for i in range(k):
-        matrixFor1D = A.copy()
-
-        for singularValue, u, v in svdSoFar[:i]:
-            matrixFor1D -= singularValue * np.outer(u, v)
-
+        matriz_metodo = A.copy()
+        
+        for sv, u, v in svd_actual[:i]:
+            matriz_metodo -= sv*np.outer(u, v)
+            
         if n > m:
-            v = svd_1d(matrixFor1D, epsilon=epsilon)  # next singular vector
-            u_unnormalized = np.dot(A, v)
-            sigma = norm(u_unnormalized)  # next singular value
-            u = u_unnormalized / sigma
+            v = svd_potencia(matriz_metodo, tol=tol, noMaxIt=noMaxIt)
+            u_sin_norma = np.dot(A, v)
+            sigma = norm(u_sin_norma)
+            u = u_sin_norma/sigma
         else:
-            u = svd_1d(matrixFor1D, epsilon=epsilon)  # next singular vector
-            v_unnormalized = np.dot(A.T, u)
-            sigma = norm(v_unnormalized)  # next singular value
-            v = v_unnormalized / sigma
-
-        svdSoFar.append((sigma, u, v))
-
-    singularValues, us, vs = [np.array(x) for x in zip(*svdSoFar)]
-    return singularValues, us.T, vs
-
-
-
-
-
+            u = svd_potencia(matriz_metodo, tol=tol, noMaxIt=noMaxIt)
+            v_sin_norma = np.dot(A.T, u)
+            sigma = norm(v_sin_norma)
+            v = v_sin_norma/sigma
+            
+        
+        svd_actual.append((sigma, u, v))
+    
+    #La instrucción zip hace tuplas emparejadas por los elementos por índice
+    valores_singulares, u_final, v_final = [np.array(x) for x in zip(*svd_actual)]
+            
+    return valores_singulares, u_final.T, v_final
 
 
-print(svd1(A))
 
-s2, u2, v2 = svd1(A)
+
+
+
+
+s, u, v = descomposicion_en_valores_singulares(A)
 
 print("-------------------U-------------------")
-print(u2)
+print(u)
 print("\n--------------Sigma----------------")
-print(s2)
-print("\n-------------V transpose---------------")
-print(v2)
+print(s)
+print("\n-------------V transpuesta---------------")
+print(v)
 
 
 diag_eig = np.zeros((3, 3))
 diag_eig[:3, :3] = np.diag(s2[:3])
 print(u2@diag_eig@v2)
+
+
+
+
+print("Usando la librería de Python")
+
+u, s, v = svd(A)
+
+print("-------------------U-------------------")
+print(u)
+print("\n--------------Sigma----------------")
+print(s)
+print("\n-------------V transpuesta---------------")
+print(v)
+
+
+diag_eig = np.zeros((3, 3))
+diag_eig[:3, :3] = np.diag(s2[:3])
+print(u2@diag_eig@v2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
