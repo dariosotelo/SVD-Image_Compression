@@ -54,7 +54,7 @@ def singular_value_descomposition(Mat):
     #Se le aplica la raíz a los eigenvalores
     eigval = np.sqrt(eigval)
     
-    sigma = eigval[::1]
+    sigma = eigval[::-1]
     
     return U, sigma, Vt
 
@@ -252,7 +252,7 @@ def descomposicion_en_valores_singulares(A, k=None, tol=1e-10, noMaxIt=1e10):
 
 
 
-s, u, v = descomposicion_en_valores_singulares(A)
+s2, u2, v2 = descomposicion_en_valores_singulares(A)
 
 print("-------------------U-------------------")
 print(u)
