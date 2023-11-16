@@ -12,7 +12,7 @@ from matplotlib.image import imread
 import matplotlib.pyplot as plt
 import os
 
-
+# Toda esta celda no funciona
 #Plan A
 def singular_value_descomposition(Mat):
     aux1 = np.dot(Mat, Mat.T)
@@ -117,7 +117,7 @@ plt.axis('off')
 plt.show()
 
 # Realizar la descomposición SVD
-U, S, Vt = np.linalg.svd(imagen_gris)
+U, S, Vt = singular_value_descomposition(imagen_gris)
 
 S = np.diag(S)
 
@@ -162,7 +162,7 @@ print(ruta)
 
 
 
-#%% Código de internet
+#%% Esta celda sí funciona
 
 import numpy as np
 from numpy.linalg import norm
@@ -182,7 +182,7 @@ def vector_unitario_aleatorio(n):
 
 
     
-def svd_potencia(A, tol=1e-10, noMaxIt=1e10):
+def svd_potencia(A, tol=1e-10, noMaxIt=100):
     n, m = A.shape
     
     #Crea un vector normalizado del tamaño más pequeño entre columnas y renglones
@@ -208,11 +208,11 @@ def svd_potencia(A, tol=1e-10, noMaxIt=1e10):
         
         
         if k > noMaxIt:
-            raise TypeError("El método no converge con la tolerancia dada y/o el número máximo de iteraciones es muy pequeño")
+            raise TypeError("El método no converge con la tolerancia dada y/o el número máximo de iteraciones es muy pequeño para usar el método de la potencia")
         
         
         
-def descomposicion_en_valores_singulares(A, k=None, tol=1e-10, noMaxIt=1e10):
+def descomposicion_en_valores_singulares(A, k=None, tol=1e-10, noMaxIt=100):
     #En esta línea se convierte la matriz en un arreglo de numpy de tipo flotante
     A = np.array(A, dtype=float)
     
@@ -221,28 +221,31 @@ def descomposicion_en_valores_singulares(A, k=None, tol=1e-10, noMaxIt=1e10):
     svd_actual = []
     if k is None: k = min(n, m)
     
-    for i in range(k):
-        matriz_metodo = A.copy()
-        
-        for sv, u, v in svd_actual[:i]:
-            matriz_metodo -= sv*np.outer(u, v)
-            
-        if n > m:
-            v = svd_potencia(matriz_metodo, tol=tol, noMaxIt=noMaxIt)
-            u_sin_norma = np.dot(A, v)
-            sigma = norm(u_sin_norma)
-            u = u_sin_norma/sigma
-        else:
-            u = svd_potencia(matriz_metodo, tol=tol, noMaxIt=noMaxIt)
-            v_sin_norma = np.dot(A.T, u)
-            sigma = norm(v_sin_norma)
-            v = v_sin_norma/sigma
-            
-        
-        svd_actual.append((sigma, u, v))
     
-    #La instrucción zip hace tuplas emparejadas por los elementos por índice
-    valores_singulares, u_final, v_final = [np.array(x) for x in zip(*svd_actual)]
+    try:
+        for i in range(k):
+            matriz_metodo = A.copy()
+            
+            for sv, u, v in svd_actual[:i]:
+                matriz_metodo -= sv*np.outer(u, v)
+                
+            if n > m:
+                v = svd_potencia(matriz_metodo, tol=tol, noMaxIt=noMaxIt) 
+                u_sin_norma = np.dot(A, v)
+                sigma = norm(u_sin_norma)
+                u = u_sin_norma/sigma
+            else:
+                u = svd_potencia(matriz_metodo, tol=tol, noMaxIt=noMaxIt)
+                v_sin_norma = np.dot(A.T, u)
+                sigma = norm(v_sin_norma)
+                v = v_sin_norma/sigma
+                
+            
+            svd_actual.append((sigma, u, v))
+        
+        #La instrucción zip hace tuplas emparejadas por los elementos por índice
+        valores_singulares, u_final, v_final = [np.array(x) for x in zip(*svd_actual)]
+    except Exception as e: valores_singulares, u_final, v_final = svd(A); print(e)
             
     return valores_singulares, u_final.T, v_final
 
@@ -252,39 +255,34 @@ def descomposicion_en_valores_singulares(A, k=None, tol=1e-10, noMaxIt=1e10):
 
 
 
-s2, u2, v2 = descomposicion_en_valores_singulares(A)
+plt.rcParams['figure.figsize'] = [16, 8]
+ruta = os.path.expanduser('~/Proyectos/SVD-Image_Compression/camello_shrigley.jpg')
+patos = imread(ruta)
 
-print("-------------------U-------------------")
-print(u)
-print("\n--------------Sigma----------------")
-print(s)
-print("\n-------------V transpuesta---------------")
-print(v)
+#Para que sea en blanco y negro, tiene que ser en blanco y negro para que se pueda multiplicar las matrices
+imagen_gris = np.mean(patos, axis=-1)
 
+# Mostrar la imagen en escala de grises
+plt.rcParams['figure.figsize'] = [16, 8]
+img = plt.imshow(imagen_gris, cmap='gray')
+plt.axis('off')
+plt.show()
 
-diag_eig = np.zeros((3, 3))
-diag_eig[:3, :3] = np.diag(s2[:3])
-print(u2@diag_eig@v2)
+# Realizar la descomposición SVD
+U, S, Vt = descomposicion_en_valores_singulares(imagen_gris)
 
+S = np.diag(S)
 
-
-
-print("Usando la librería de Python")
-
-u, s, v = svd(A)
-
-print("-------------------U-------------------")
-print(u)
-print("\n--------------Sigma----------------")
-print(s)
-print("\n-------------V transpuesta---------------")
-print(v)
-
-
-diag_eig = np.zeros((3, 3))
-diag_eig[:3, :3] = np.diag(s2[:3])
-print(u2@diag_eig@v2)
-
+j = 0
+for r in (5, 20, 100):
+    img_approx = U[:,:r] @ S[0:r,:r] @ Vt[:r, :]
+    plt.figure(j+1)
+    j += 1
+    img = plt.imshow(img_approx)
+    img.set_cmap('gray')
+    plt.axis('off')
+    plt.title('r = '+str(r))
+    plt.show()
 
 
 
