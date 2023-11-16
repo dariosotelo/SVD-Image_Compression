@@ -73,7 +73,7 @@ print(" ")
 
 print("Código de numpy")
 
-u1, s1, v1 = svd(A)
+u1, s1, v1 = np.linalg.svd(A)
 
 print(u1, s1, v1)
     
@@ -83,8 +83,7 @@ print("")
 print(" ")
 print("Comprobación")
 
-diag_eig1 = np.zeros((3, 3))
-diag_eig1[:3, :3] = np.diag(s1[:3])
+diag_eig1=np.diag(s1)
 
 A_nueva = u1@diag_eig1@v1
 print(A_nueva)
