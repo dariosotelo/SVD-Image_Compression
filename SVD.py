@@ -8,6 +8,9 @@ Created on Tue Nov 14 15:53:22 2023
 
 import numpy as np
 from scipy.linalg import svd
+from matplotlib.image import imread
+import matplotlib.pyplot as plt
+import os
 
 
 #Plan A
@@ -27,8 +30,6 @@ def singular_value_descomposition(Mat):
     #En la siguiente línea se le asigna a U el valor de los eigenvectores correspondientes a los eigenvalores
     #de forma descendente.
     U = eigvec[:, eigenval_desc]
-    
-    
     
     
     #La siguiente matriz que vamos a obtener es Vt
@@ -99,12 +100,69 @@ diag_eig[:3, :3] = np.diag(s[:3])
 
 A_nueva = u@diag_eig@v
 print(A_nueva)
+
+
+#Lectura de imagen
+plt.rcParams['figure.figsize'] = [16, 8]
+ruta = os.path.expanduser('~/Proyectos/SVD-Image_Compression/camello_shrigley.jpg')
+patos = imread(ruta)
+
+#Para que sea en blanco y negro, tiene que ser en blanco y negro para que se pueda multiplicar las matrices
+imagen_gris = np.mean(patos, axis=-1)
+
+# Mostrar la imagen en escala de grises
+plt.rcParams['figure.figsize'] = [16, 8]
+img = plt.imshow(imagen_gris, cmap='gray')
+plt.axis('off')
+plt.show()
+
+# Realizar la descomposición SVD
+U, S, Vt = np.linalg.svd(imagen_gris)
+
+S = np.diag(S)
+
+j = 0
+for r in (5, 20, 100):
+    img_approx = U[:,:r] @ S[0:r,:r] @ Vt[:r, :]
+    plt.figure(j+1)
+    j += 1
+    img = plt.imshow(256-img_approx)
+    img.set_cmap('gray')
+    plt.axis('off')
+    plt.title('r = '+str(r))
+    plt.show()
     
     
+#%% 
 
+ruta = os.path.expanduser('~/Proyectos/SVD-Image_Compression/lago.jpg')
+patos = imread(ruta)
 
+# Convertir la imagen a escala de grises
+imagen_gris = np.mean(patos, axis=-1)
 
+# Mostrar la imagen en escala de grises
+plt.rcParams['figure.figsize'] = [16, 8]
+img = plt.imshow(imagen_gris, cmap='gray')
+plt.axis('off')
+plt.show()
+
+# Realizar la descomposición SVD
+U, S, Vt = np.linalg.svd(imagen_gris)
+    
 #%%
+
+# Mostrar la imagen
+plt.imshow(patos)
+plt.axis('off')  # Para ocultar los ejes
+plt.show()
+
+print(ruta)
+
+
+
+
+#%% Código de internet
 
 import numpy as np
 from numpy.linalg import norm
