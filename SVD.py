@@ -126,7 +126,7 @@ for r in (5, 20, 100):
     img_approx = U[:,:r] @ S[0:r,:r] @ Vt[:r, :]
     plt.figure(j+1)
     j += 1
-    img = plt.imshow(256-img_approx)
+    img = plt.imshow(img_approx)
     img.set_cmap('gray')
     plt.axis('off')
     plt.title('r = '+str(r))
