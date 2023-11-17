@@ -1,0 +1,88 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish, es-noshorthands]{babel}
+\decimalpoint
+\usepackage{amssymb,amsmath,amsthm,amsfonts,mathtools}
+\usepackage[breakable]{tcolorbox}
+\usepackage{microtype}
+
+% ---- COLORES ----
+\usepackage{xcolor}
+\definecolor{miAzul}{RGB}{13, 33, 161}
+\definecolor{miRojo}{RGB}{186, 24, 27}
+\definecolor{miVerde}{RGB}{65, 123, 90}
+
+% ---- LINKS ----
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=miAzul, citecolor=miVerde, linkcolor=miRojo}
+
+% ---- IMÁGENES ----
+\usepackage{graphicx}
+\graphicspath{ {imgs/} }
+
+% ---- FORMATO DE TÍTULOS ----
+\usepackage{titlesec}
+\titlespacing{\section}{0pt}{1em plus 4pt minus 2pt}{0pt plus 2pt minus 2pt}
+\titlespacing{\subsection}{0pt}{1em plus 4pt minus 2pt}{0pt plus 2pt minus 2pt}
+\titlespacing{\subsubsection}{0pt}{1em plus 4pt minus 2pt}{0pt plus 2pt minus 2pt}
+
+% ---- FORMATO DE LISTAS ----
+\usepackage[inline]{enumitem}
+\setlist[itemize]{topsep=-0.5em} % es media m para compensar
+\setlist[enumerate]{topsep=-0.5em}
+
+% ---- GRÁFICAS ----
+\usepackage{tikz}
+\usepackage{scalerel}
+\usepackage{pict2e}
+\usepackage{tkz-euclide}
+\usetikzlibrary{calc}
+\usetikzlibrary{patterns,arrows.meta}                   % Mejores flechas
+\usetikzlibrary{shadows}                                % Sombras
+\usetikzlibrary{external}                               % ¿?
+\usetikzlibrary{decorations.pathreplacing,calligraphy}  % Para poder graficar el '{'
+% Plots
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}                             % Ancho de las gráficas: width=6.5cm,
+\usepgfplotslibrary{statistics}
+\usepgfplotslibrary{fillbetween}
+
+% ---- BIBLIOGRAFÍA ----
+\usepackage[backend=biber]{biblatex}
+\addbibresource{fuentes.bib}
+
+% ---- PSEUDOCÓDIGO ----
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{amsmath}
+
+% ---- FORMATO DE LAS PÁGINAS ----
+\usepackage[a4paper, width=165mm, top=20mm, bottom = 20mm]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\footnotesize Proyecto final}
+\chead{\footnotesize \textbf{Compresión de Imágenes con SVD}}
+\rhead{\footnotesize \today}
+%\lfoot{\footnotesize Equipo 2}
+\cfoot{\footnotesize \textsc{Análisis Aplicado I}}
+\rfoot{\footnotesize \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\setlength{\headheight}{15pt}
+
+% Espacio entre párrafos y quitar sangría
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0cm}
+
+\begin{document}
+\input{portada.tex}
+
+\section{Introducción}
+Así se hace una cita: \cite{Bolotin2017}.
+
+
+% Imprime las referencias
+\printbibliography
+
+\end{document}
